@@ -1,5 +1,5 @@
-#include "test_tt_node.hpp"
-#include "tt_node.hpp"
+#include "test_action_processor_node.hpp"
+#include "action_processor_node.hpp"
 #include "ros/ros.h"
 
 #include <gtest/gtest.h>
@@ -13,7 +13,7 @@ TEST(SampleTest, Test_Test)
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
-    ros::init(argc, argv, "test_tt_node");
+    ros::init(argc, argv, "test_action_processor_node");
     ros::NodeHandle nh;
     return RUN_ALL_TESTS();
 }
