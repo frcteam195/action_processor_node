@@ -1,11 +1,23 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
+#include "action_processor_node/Action.h"
+#include "action_processor_node/ActiveActions.h"
+#include "action_processor_node/RequestActionArray.h"
+#include "action_processor_node/ActionResponse.h"
+#include "action_processor_node/ParallelActionArray.h"
+#include "action_processor_node/SeriesActionArray.h"
+
 #include <thread>
 #include <string>
 #include <mutex>
 
 ros::NodeHandle* node;
+
+void requestActionCallback(const action_processor_node::RequestActionArray &msg)
+{
+	(void)msg;
+}
 
 int main(int argc, char **argv)
 {
@@ -24,6 +36,11 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	node = &n;
+
+	ros::Subscriber motorControl = node->subscribe("RequestAction", 100, requestActionCallback);
+
+
+
 
 	ros::spin();
 	return 0;
