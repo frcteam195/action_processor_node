@@ -1,0 +1,8 @@
+ActionListParallel parallel_list
+---
+int8 ACCEPTED=0
+int8 REJECTED=1
+
+int8 id
+int8 state
+int8 position_in_queue

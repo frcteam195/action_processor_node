@@ -4,7 +4,10 @@ int8 EXECUTING=1
 int8 COMPLETE=0
 int8 FAILED=-1
 
-string action_id
 int8 status
 uuid_msgs/UniqueID uuid
-time timeout
+---
+int8 OK=0
+int8 REJECTED=-1
+
+int8 status

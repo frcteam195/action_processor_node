@@ -1,0 +1,6 @@
+ParallelActionID parallel_action_id
+---
+int8 OK=0
+int8 REJECTED=-1
+
+int8 status
