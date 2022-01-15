@@ -245,15 +245,26 @@ bool cancel_overall_action( action_processor_node::CancelOverall::Request& req,
                             action_processor_node::CancelOverall::Response& resp )
 {
 
+
+    bool erased = false;
+
+    std::cout << "CANCEL OVERALL\n";
     action_processor_node::OverallActions output_overall_actions;
     for( int i = 0; (size_t)i < actions.size(); i++ )
     {
-        if( actions[i].parallel_action_id == req.parallel_action_id )
+        if( actions[i].parallel_action_id.name == req.parallel_action_id.name )
         {
+            std::cout << "CANCELED " << i << "\n";
             actions.erase( actions.begin()+1 );
-            resp.status = action_processor_node::CancelOverall::Response::OK;
-            return true;
+            i--;
+            erased = true;
         }
+    }
+
+    if (erased)
+    {
+        resp.status = action_processor_node::CancelOverall::Response::OK;
+        return true;
     }
 
     resp.status = action_processor_node::CancelOverall::Response::REJECTED;
