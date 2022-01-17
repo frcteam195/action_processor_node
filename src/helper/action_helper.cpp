@@ -9,6 +9,17 @@ ActionHelper::ActionHelper(ros::NodeHandle* node)
     add_action_client = node->serviceClient<action_processor_node::ActionReq>("/add_action_request");
     update_action_client = node->serviceClient<action_processor_node::ActionUpdate>("/update_action_request");
     cancel_overall_client = node->serviceClient<action_processor_node::CancelOverall>("/cancel_overall_action");
+
+    pending_action_sub = node->subscribe("/pending_actions",
+                                         10,
+                                         &ActionHelper::pending_action_callback,
+                                         this);
+
+    executing_action_sub = node->subscribe("/executing_actions",
+                                           10,
+                                           &ActionHelper::executing_action_callback,
+                                           this);
+
 }
 
 
@@ -105,4 +116,58 @@ bool ActionHelper::req_cancel_category( std::string category )
     cancel_overall_client.call(req);
 
     return true;
+}
+
+void ActionHelper::pending_action_callback( const action_processor_node::ActionList& msg )
+{
+    pending_actions = msg;
+}
+
+
+void ActionHelper::executing_action_callback( const action_processor_node::ActionList& msg )
+{
+    executing_actions = msg;
+}
+
+bool ActionHelper::check_action( std::string action_id )
+{
+    for( int i = 0; (size_t)i < pending_actions.actions.size(); i++ )
+    {
+        if( pending_actions.actions[i].action_id == action_id )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool ActionHelper::update_action( std::string action_id, ACTION_STATUS stat )
+{
+    action_processor_node::ActionUpdate req;
+
+
+    for( int i = 0; (size_t)i < pending_actions.actions.size(); i++ )
+    {
+        if( pending_actions.actions[i].action_id == action_id )
+        {
+            req.request.status = (int)stat;
+            req.request.uuid = pending_actions.actions[i].uuid;
+            update_action_client.call( req );
+            return true;
+        }
+    }
+
+    for( int i = 0; (size_t)i < executing_actions.actions.size(); i++ )
+    {
+        if( executing_actions.actions[i].action_id == action_id )
+        {
+            req.request.status = (int)stat;
+            req.request.uuid = executing_actions.actions[i].uuid;
+            update_action_client.call( req );
+            return true;
+        }
+    }
+
+    return false;
 }

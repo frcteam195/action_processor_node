@@ -33,7 +33,6 @@ action_processor_node::Action* find_action( uuid_msgs::UniqueID id )
         action_processor_node::ActionListParallel* current_parallel
             = &(actions[parallel_i]);
 
-
         for( int i = 0; (size_t)i < current_parallel->action_list.size(); i++ )
         {
             // for every ActionList, take the action that is currently
@@ -67,6 +66,8 @@ void step_actions()
     {
         // only process the first for now
         if( parallel_i > 0 ){ break; }
+
+        bool all_complete = true;
 
         action_processor_node::ActionListParallel* current_parallel
             = &(actions[parallel_i]);
@@ -106,7 +107,21 @@ void step_actions()
 
                 }
 
+                // if after all the update the current action is not complete/failed
+                // markl all complete as false
+                if( !(current_action->status == action_processor_node::Action::COMPLETE ||
+                      current_action->status == action_processor_node::Action::FAILED ) )
+                {
+                    all_complete = false;
+                }
+
             }
+        }
+
+        if( all_complete )
+        {
+            actions.erase( actions.begin()+parallel_i );
+            parallel_i -= 1;
         }
     }
 
@@ -114,12 +129,13 @@ void step_actions()
 
 void publish_actions()
 {
-
     action_processor_node::OverallActions output_overall_actions;
     for( int i = 0; (size_t)i < actions.size(); i++ )
     {
         output_overall_actions.parallel_actions.push_back( actions[i].parallel_action_id );
     }
+
+    overall_action_publisher.publish( output_overall_actions );
 
     action_processor_node::ActionList output_executing;
     action_processor_node::ActionList output_pending;
