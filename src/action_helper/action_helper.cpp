@@ -1,7 +1,7 @@
 
-#include "helper/action_helper.hpp"
+#include "action_helper/action_helper.hpp"
 
-#include <../../../lib_uuid_node/include/lib_uuid_node.hpp>
+#include <lib_uuid/lib_uuid.hpp>
 
 
 ActionHelper::ActionHelper(ros::NodeHandle* node)

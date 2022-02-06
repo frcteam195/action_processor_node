@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 set(PROJECT_NAME "action_processor_node")
+set(LIBRARY_NAME "action_helper")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(${PROJECT_NAME})
@@ -37,20 +38,15 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES rio_control_node
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES ${LIBRARY_NAME}
   CATKIN_DEPENDS roscpp message_generation message_runtime rio_control_node lib_uuid_node
 )
 
 include_directories(
-  include
- ${catkin_INCLUDE_DIRS}
- ${CMAKE_SOURCE_DIR}/../../../third_party_libs/ROSProtoDef2022/out
+  #include
+  ${catkin_INCLUDE_DIRS}
 )
-
-message("CATKIN INCLUDES:${catkin_INCLUDE_DIRS}")
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
@@ -61,29 +57,45 @@ file(GLOB_RECURSE executable_sources CONFIGURE_DEPENDS
      "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(${PROJECT_NAME} ${executable_sources})
-target_include_directories(${PROJECT_NAME} PUBLIC "include")
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Threads::Threads)
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+file(GLOB_RECURSE test_sources CONFIGURE_DEPENDS
+     "${PROJECT_SOURCE_DIR}/test/src/*.cpp"
+)
+
+add_library(${LIBRARY_NAME} ${executable_sources})
+target_include_directories(${LIBRARY_NAME} PUBLIC "include")
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} Threads::Threads)
+add_dependencies(${LIBRARY_NAME} ${${LIBRARY_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
+
+## Mark executables and/or libraries for installation
+install(TARGETS ${LIBRARY_NAME}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+# install(TARGETS standalone_converter
+#    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark cpp header files for installation
+install(DIRECTORY include/${LIBRARY_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   #FILES_MATCHING PATTERN "*.h"
+   #FILES_MATCHING PATTERN "*.hpp"
+   PATTERN ".svn" EXCLUDE
+)
 
 
-# Action Processor Node Helper
-
-set( HELPER_LIB_NAME action_helper )
-add_library( ${HELPER_LIB_NAME} src/helper/action_helper.cpp )
-target_link_libraries(${HELPER_LIB_NAME}
-  ${catkin_LIBRARIES}
-  Threads::Threads)
-target_include_directories(${HELPER_LIB_NAME} PUBLIC "include"  ${catkin_INCLUDE_DIRS})
-add_dependencies(${HELPER_LIB_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-install(TARGETS ${HELPER_LIB_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION} )
-
-install(DIRECTORY include/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.hpp")
-
+#############
+## Testing ##
+#############
+if (CATKIN_ENABLE_TESTING)
+  ## Add gtest based cpp test target and link libraries.
+  catkin_add_gtest(${LIBRARY_NAME}-test ${test_sources})
+  if(TARGET ${LIBRARY_NAME}-test)
+    target_link_libraries(${LIBRARY_NAME}-test ${LIBRARY_NAME})
+    target_include_directories(${LIBRARY_NAME}-test PUBLIC "include" "test/include")
+    add_dependencies(${LIBRARY_NAME}-test ${LIBRARY_NAME} ${${LIBRARY_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  endif()
+endif()
