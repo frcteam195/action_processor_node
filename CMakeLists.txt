@@ -61,6 +61,11 @@ file(GLOB_RECURSE test_sources CONFIGURE_DEPENDS
      "${PROJECT_SOURCE_DIR}/test/src/*.cpp"
 )
 
+add_executable(${PROJECT_NAME} ${executable_sources})
+target_include_directories(${PROJECT_NAME} PUBLIC "include")
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Threads::Threads)
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_library(${LIBRARY_NAME} ${executable_sources})
 target_include_directories(${LIBRARY_NAME} PUBLIC "include")
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} Threads::Threads)
